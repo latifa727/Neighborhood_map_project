@@ -1,0 +1,198 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Lateifah Neighborhood Map</title>
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+
+  </head>
+  <body>
+
+<nav class="navbar navbar-default nav-bar col-sm-3 col-md-3">
+    <div class="container-fluid">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div>
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+        <h2 class="main-title">Amazing Locations in Dubai</h2>
+      </div>
+
+      <!-- filteredInput text for user to filter Airport location list -->
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <input type="search" id="search-input" placeholder="Filter Dubai Locations" data-bind="textInput: filteredInput">
+        </div>
+        <ul class="places-list" data-bind="foreach: myLocations">
+          <p class="places" data-bind="text: title, click: $parent.showLocation,  visible: show"></p>
+        </ul>
+
+      </div><!-- container-fluid div -->
+  </nav>
+      <!-- Google Maps section -->
+  <div id="map" class="map"></div>
+
+  <!-- required js files to run this project -->
+<script >
+
+var MapViewModel;
+
+      var map;     
+      var locations = [
+          //{title: 'World Trade Center', location: {lat: 25.224824, lng: 55.285031}},
+          //{title: 'Modhish World', location: {lat: 25.222431, lng: 55.285741}},
+          //{title: 'Nad Al Sheba Horse Course', location: {lat: 25.217703, lng: 55.290851}},
+          {title: 'Dubai Ice Rink', location: {lat: 25.197141, lng: 55.279666}},
+          {title: 'Burj Khalifa', location: {lat: 25.197214, lng: 55.274407}},
+          {title: 'Fashion Avenue - The Dubai Mall', location: {lat: 25.198891, lng: 55.275096}},
+          {title: 'Dubai Aquarium & Underwater Zoo', location: {lat: 25.197388, lng: 55.27908}},
+          {title: 'Dubai Mall', location: {lat: 25.19872, lng: 55.279863}},
+          {title: 'Kidzania', location: {lat: 25.196525, lng: 55.2804}},
+          {title: 'The Dubai Fountain', location: {lat: 25.195709, lng: 55.27683}},
+          {title: 'Book World', location: {lat: 25.197287, lng: 55.276508}},
+          {title: 'Galeries Lafayette', location: {lat: 25.197317, lng: 55.28166}},
+          {title: 'LeTo Resturant', location: {lat: 25.196457, lng: 55.275964}},
+          {title: 'Dubai Opera', location: {lat: 25.195673, lng: 55.271857}},
+        ];
+ 
+     // TODO: Complete the following function to initialize the map
+     function initMap() {
+       
+       // Create a new blank array for all the listing markers.
+      var markers = [];
+       map = new google.maps.Map(document.getElementById('map'), {
+        center : {lat: 25.224723, lng: 55.284993},
+        zoom:13
+       });
+       
+        var largeInfowindow = new google.maps.InfoWindow();
+        var bounds = new google.maps.LatLngBounds();
+
+        // The following group uses the location array to create an array of markers on initialize.
+        for (var i = 0; i < locations.length; i++) {
+          // Get the position from the location array.
+          var position = locations[i].location;
+          var title = locations[i].title;
+          // Create a marker per location, and put into markers array.
+          var marker = new google.maps.Marker({
+            map: map,
+            position: position,
+            title: title,
+            animation: google.maps.Animation.DROP,
+            id: i
+          });
+          // Push the marker to our array of markers.
+          markers.push(marker);
+          // Create an onclick event to open an infowindow at each marker.
+          marker.addListener('click', function() {
+            populateInfoWindow(this, largeInfowindow);
+          });
+           marker.addListener('mouseover', function() {
+      var mouseover_color="363";
+          var markerImage = new google.maps.MarkerImage(
+          'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|'+ mouseover_color +
+          '|40|_|%E2%80%A2');                     
+      this.setIcon(markerImage);
+          });
+     // reset marker color to default when mouseout
+          marker.addListener('mouseout', function() {
+      this.setIcon("");
+          });
+
+          bounds.extend(markers[i].position);
+        }
+        // Extend the boundaries of the map for each marker
+        map.fitBounds(bounds);
+      } // end of initmap function 
+
+      // populateInfoWindow function
+      function populateInfoWindow(marker, infowindow) {
+        // Check to make sure the infowindow is not already opened on this marker.
+        if (infowindow.marker != marker) {
+          infowindow.marker = marker;
+          infowindow.setContent('<div>' + marker.title + '</div>');
+          infowindow.open(map, marker);
+          // Make sure the marker property is cleared if the infowindow is closed.
+          infowindow.addListener('closeclick',function(){
+            infowindow.setMarker = null;
+          });
+        }
+
+     } // end of populateInfoWindow function
+
+
+ </script>
+  <script async defer src="http://maps.googleapis.com/maps/api/js?libraries=places,geometry,drawing&key=AIzaSyAYBd6CouuNNV_PoZdxR_wB3sUCzsKFHN0&v=3&callback=initMap"></script>
+  <script src='js/knockout-min.js'></script>
+  <script src='js/jquery.min.js'></script>
+  <script src="js/bootstrap.min.js"></script>
+ <script >
+
+
+// start of KO code
+     // creat Location Constructor
+var Location = function(data) {
+  var self = this;
+  this.title = data.title;
+  this.location = data.location;
+  this.show = ko.observable(true);
+};
+
+// define Location using Knockout framework
+var AppViewModel = function() {
+  var self = this;
+  this.myLocations = ko.observableArray();
+  this.filteredInput = ko.observable("");
+  for (i = 0; i < locations.length; i++) {
+    var place = new Location(locations[i]);
+    self.myLocations.push(place);
+  }
+  // filter location based on the user string input in the textbox 
+  this.searchFilter = ko.computed(function() {
+    var filter = self.filteredInput().toLowerCase(); 
+    for (j = 0; j < self.myLocations().length; j++) {
+      if (
+        self
+          .myLocations()
+          [j].title.toLowerCase()
+          .indexOf(filter) > -1
+      ) {
+        // show only location list which match user search text
+    self.myLocations()[j].show(true); 
+    // make the marker visible if it match user search text
+        if (self.myLocations()[j].marker) {
+          self.myLocations()[j].marker.setVisible(true); 
+        }
+      } else {
+      // hide both location list and marker which dosnot match user search text
+        self.myLocations()[j].show(false); 
+        if (self.myLocations()[j].marker) {
+          self.myLocations()[j].marker.setVisible(false); 
+        }
+      }
+    }
+  });
+
+  //when location from location list is clicked show marker bounces
+  this.showLocation = function(locations) {
+    google.maps.event.trigger(locations.marker, "click");
+  };
+};
+
+MapViewModel = new AppViewModel();
+
+ko.applyBindings(MapViewModel);
+
+// end of KO code
+
+
+ </script>
+  </body>
+</html>
+
